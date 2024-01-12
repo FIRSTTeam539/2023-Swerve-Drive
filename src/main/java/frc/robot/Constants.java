@@ -86,6 +86,9 @@ public final class Constants {
     public static final int kDriverControllerPort0 = 0;
     public static final int kDriverControllerPort1 = 1;
     public static final double kDriveDeadband = 0.05;
+
+    public static final double kDefaultDriveSpeed = 0.7;
+    public static final double kDriveSpeedIncreaseConstant = 1- kDefaultDriveSpeed;
     // Joystick Deadband
     public static final double LEFT_X_DEADBAND = 0.01;
     public static final double LEFT_Y_DEADBAND = 0.01;
