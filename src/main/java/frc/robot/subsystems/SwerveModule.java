@@ -17,12 +17,18 @@ import com.revrobotics.RelativeEncoder;
 
 import frc.robot.Constants.ModuleConstants;
 
+//simulation imports
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
+
 public class SwerveModule {
   private final CANSparkMax m_drivingSparkMax;
   private final CANSparkMax m_turningSparkMax;
 
   private final RelativeEncoder m_drivingEncoder;
   private final AbsoluteEncoder m_turningEncoder;
+
+  //private EncoderSim m_drivingEncoderSim = new EncoderSim(null)//new EncoderSim(m_drivingEncoder);
+  //private relat
 
   private final SparkMaxPIDController m_drivingPIDController;
   private final SparkMaxPIDController m_turningPIDController;

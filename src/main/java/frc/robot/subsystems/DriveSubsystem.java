@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,6 +19,17 @@ import edu.wpi.first.wpilibj.SPI;
 import frc.robot.Constants.DriveConstants;
 import frc.utils.SwerveUtils;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+//simulation imports
+import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.Robot;
+import edu.wpi.first.math.geometry.Twist2d;
 
 public class DriveSubsystem extends SubsystemBase {
   // Create MAXSwerveModules
@@ -61,22 +73,81 @@ public class DriveSubsystem extends SubsystemBase {
           m_rearLeft.getPosition(),
           m_rearRight.getPosition()
       });
+  private Pose2d simOdometryPose = m_odometry.getPoseMeters();
+  private final Field2d m_fieldSim;
+  private SimDeviceSim m_simGyro = new SimDeviceSim("navX-Sensor[0]"); 
+//SimDouble angle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, “Yaw”));
+//angle.set(5.0);
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
+    if (RobotBase.isSimulation()) { // If our robot is simulated
+      // This class simulates our drivetrain's motion around the field.
+      /*m_drivetrainSimulator =
+          new DifferentialDrivetrainSim(
+              DriveConstants.kDrivetrainPlant,
+              DriveConstants.kDriveGearbox,
+              DriveConstants.kDriveGearing,
+              DriveConstants.kTrackwidthMeters,
+              DriveConstants.kWheelDiameterMeters / 2.0,
+              VecBuilder.fill(0, 0, 0.0001, 0.1, 0.1, 0.005, 0.005));*/
+
+      // The encoder and gyro angle sims let us set simulated sensor readings
+      /*m_leftEncoderSim = new EncoderSim(m_leftEncoder);
+      m_rightEncoderSim = new EncoderSim(m_rightEncoder);
+      m_gyroSim = new ADXRS450_GyroSim(m_gyro);*/
+
+      // the Field2d class lets us visualize our robot in the simulation GUI.
+      m_fieldSim = new Field2d();
+      SmartDashboard.putData("Field", m_fieldSim);
+      SmartDashboard.putBoolean("Simulation", Robot.isReal());
+      m_fieldSim.setRobotPose(m_odometry.getPoseMeters());
+
+    } else {
+      /*m_leftEncoderSim = null;
+      m_rightEncoderSim = null;
+      m_gyroSim = null;*/
+
+      m_fieldSim = null;
+    }
+  }
+
+  public void updateOdometry() {
+    // if  the magnometer on the gyro is calabratied the switch with m_gyro.getFusedAngle(); for more acurate readings and less drift
+    m_odometry.update(
+        Rotation2d.fromDegrees(m_gyro.getAngle()),
+        new SwerveModulePosition[] {
+          m_frontLeft.getPosition(),
+          m_frontRight.getPosition(),
+          m_rearLeft.getPosition(),
+          m_rearRight.getPosition()
+      });
+
+    if (Robot.isSimulation()) {
+      SwerveModuleState[] measuredStates =
+          new SwerveModuleState[] {
+            m_frontLeft.getState(), m_frontRight.getState(), m_rearLeft.getState(), m_rearRight.getState()
+          };
+      ChassisSpeeds speeds = DriveConstants.kDriveKinematics.toChassisSpeeds(measuredStates);
+      simOdometryPose =
+          simOdometryPose.exp(
+              new Twist2d(
+                  speeds.vxMetersPerSecond * .02,
+                  speeds.vyMetersPerSecond * .02,
+                  speeds.omegaRadiansPerSecond * .02));
+    }
   }
 
   @Override
   public void periodic() {
     // Update the odometry in the periodic block
-    m_odometry.update(
-        Rotation2d.fromDegrees(m_gyro.getAngle()),
-        new SwerveModulePosition[] {
-            m_frontLeft.getPosition(),
-            m_frontRight.getPosition(),
-            m_rearLeft.getPosition(),
-            m_rearRight.getPosition()
-        });
+    updateOdometry();
+    m_fieldSim.setRobotPose(m_odometry.getPoseMeters());
+  }
+  
+  @Override
+  public void simulationPeriodic(){
+
   }
 
   /**
@@ -85,7 +156,11 @@ public class DriveSubsystem extends SubsystemBase {
    * @return The pose.
    */
   public Pose2d getPose() {
-    return m_odometry.getPoseMeters();
+    if (Robot.isReal()) {
+      return m_odometry.getPoseMeters();
+    } else {
+      return simOdometryPose;
+    }
   }
 
   /**
@@ -103,8 +178,8 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearRight.getPosition()
         },
         pose);
+    simOdometryPose = pose;
   }
-
   /**
    * Method to drive the robot using joystick info.
    *
