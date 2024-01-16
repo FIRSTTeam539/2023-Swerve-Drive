@@ -50,14 +50,12 @@ public class RobotContainer {
     configureButtonBindings();
     // Configure default commands
     TeleopDrive teleopDrive = new TeleopDrive(m_robotDrive, 
-      (()->MathUtil.applyDeadband((m_driverController0.getLeftY()*OIConstants.kDefaultDriveSpeed+
-      OIConstants.kDriveSpeedIncreaseConstant*m_driverController0.getRightTriggerAxis()), 
-      OIConstants.LEFT_Y_DEADBAND)), 
-      (()->MathUtil.applyDeadband((m_driverController0.getLeftX()*OIConstants.kDefaultDriveSpeed+
-      OIConstants.kDriveSpeedIncreaseConstant*m_driverController0.getRightTriggerAxis()), 
-      OIConstants.LEFT_X_DEADBAND)), 
-      (()->MathUtil.applyDeadband(m_driverController0.getRightX()*OIConstants.kDefaultDriveSpeed+
-      OIConstants.kDriveSpeedIncreaseConstant*m_driverController0.getRightTriggerAxis(), OIConstants.RIGHT_X_DEADBAND)), 
+      (()->MathUtil.applyDeadband(m_driverController0.getLeftY(), OIConstants.LEFT_Y_DEADBAND)*(OIConstants.kDefaultDriveSpeed+
+      OIConstants.kDriveSpeedIncreaseConstant*m_driverController0.getRightTriggerAxis())), 
+      (()->MathUtil.applyDeadband(m_driverController0.getLeftX(), OIConstants.LEFT_X_DEADBAND)*(OIConstants.kDefaultDriveSpeed+
+      OIConstants.kDriveSpeedIncreaseConstant*m_driverController0.getRightTriggerAxis())),  
+      (()->MathUtil.applyDeadband(m_driverController0.getRightX(), OIConstants.RIGHT_X_DEADBAND)*(OIConstants.kDefaultDriveSpeed+
+      OIConstants.kDriveSpeedIncreaseConstant*m_driverController0.getRightTriggerAxis())), 
       ()->true);
     
     TeleopDrive simClosedFieldRel = new TeleopDrive(m_robotDrive,
