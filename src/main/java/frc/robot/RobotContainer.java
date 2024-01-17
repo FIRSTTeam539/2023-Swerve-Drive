@@ -37,7 +37,7 @@ import java.util.List;
 public class RobotContainer {
   // The robot's subsystems
   private final SwerveSubsystem m_robotDrive = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-  "swerve/neo"));
+  "swerve"));
   // The driver's controller
   CommandXboxController m_driverController0 = new CommandXboxController(OIConstants.kDriverControllerPort0);
   CommandXboxController m_driverController1 = new CommandXboxController(OIConstants.kDriverControllerPort1);
